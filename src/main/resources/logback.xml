@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <property name="dir" value="f:/logs/"/>
+    <property name="tcp" value="tcp/"/>
+    <property name="udp" value="udp/"/>
+    <timestamp key="simple" datePattern="HH:mm:ss"/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{100} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="udp" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--<file>${dir}/today.log</file>-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${dir}${udp}%d{yyyy-MM-dd-HH}.log</fileNamePattern>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{${simple}} %logger{80} - %msg%n</pattern>
+        </encoder>
+        <execute>true</execute>
+        <prudent>false</prudent>
+    </appender>
+
+    <logger name="io.netty" level="debug"/>
+
+    <logger name="udp.event" level="debug">
+        <appender-ref ref="udp"/>
+    </logger>
+
+    <root level="info">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>

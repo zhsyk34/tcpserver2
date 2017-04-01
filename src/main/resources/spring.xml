@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/task
+       http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <context:property-placeholder location="classpath:redis.properties"/>
+
+    <!--redis-->
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <!--<property name="maxWaitMillis"></property>-->
+    </bean>
+
+    <bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <property name="hostName" value="${hostName}"/>
+        <property name="port" value="${port}"/>
+        <property name="poolConfig" ref="poolConfig"/>
+    </bean>
+
+    <bean class="org.springframework.data.redis.core.StringRedisTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <bean class="org.springframework.data.redis.listener.RedisMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <!--task-->
+    <task:executor id="executor"/>
+
+    <task:scheduler id="scheduler" pool-size="2"/>
+    <task:scheduled-tasks scheduler="scheduler">
+        <task:scheduled ref="taskServer" method="report" initial-delay="3000" fixed-delay="1000"/>
+        <task:scheduled ref="taskServer" method="report" initial-delay="3000" fixed-rate="1000"/>
+    </task:scheduled-tasks>
+
+    <!--<task:scheduled-tasks scheduler="scheduler">-->
+    <!--<task:scheduled ref="beanA" method="methodA" fixed-delay="5000" initial-delay="1000"/>-->
+    <!--<task:scheduled ref="beanB" method="methodB" fixed-rate="5000"/>-->
+    <!--<task:scheduled ref="beanC" method="methodC" cron="*/5 * * * * MON-FRI"/>-->
+    <!--</task:scheduled-tasks>-->
+
+    <bean id="scheduledTimerTask" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <!--<property name="runnable" ref=""/>-->
+        <!--<property name="fixedRate" value="true"/>-->
+        <!--<property name="period" value="6000"/>-->
+        <!--<property name="delay" value="2000"/>-->
+        <property name=""/>
+    </bean>
+
+    <context:component-scan base-package="com.dnk.smart"/>
+</beans>
