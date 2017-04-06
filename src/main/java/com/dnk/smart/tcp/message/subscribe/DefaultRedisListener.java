@@ -3,15 +3,14 @@ package com.dnk.smart.tcp.message.subscribe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Optional;
 
-//TODO
 @Service
-public class DefaultRedisListener {
+public final class DefaultRedisListener {
 
     @Resource
     private RedisMessageListenerContainer container;
@@ -25,8 +24,6 @@ public class DefaultRedisListener {
 
     @PostConstruct
     public void monitor() {
-        if (!CollectionUtils.isEmpty(listeners)) {
-            listeners.forEach(listener -> container.addMessageListener(listener.listener(), listener.topics()));
-        }
+        Optional.ofNullable(listeners).ifPresent(listeners -> listeners.forEach(listener -> container.addMessageListener(listener.listener(), listener.topics())));
     }
 }

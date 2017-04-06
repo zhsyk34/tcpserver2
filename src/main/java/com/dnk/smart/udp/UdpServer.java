@@ -45,6 +45,7 @@ public final class UdpServer {
             channel = bootstrap.bind(Config.UDP_SERVER_PORT).syncUninterruptibly().channel();
 
             LoggerFactory.UDP_EVENT.logger("{} startup success at port[{}]", this.getClass().getSimpleName(), Config.UDP_SERVER_PORT);
+
             channel.closeFuture().await();
         } catch (Exception e) {
             e.printStackTrace();

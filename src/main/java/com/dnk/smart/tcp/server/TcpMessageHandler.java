@@ -7,11 +7,13 @@ import com.dnk.smart.dict.Key;
 import com.dnk.smart.dict.Result;
 import com.dnk.smart.dict.redis.cache.Command;
 import com.dnk.smart.dict.tcp.LoginInfo;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.awake.AwakeService;
 import com.dnk.smart.tcp.cache.CacheAccessor;
 import com.dnk.smart.tcp.command.CommandProcessor;
 import com.dnk.smart.tcp.message.direct.ClientMessageProcessor;
 import com.dnk.smart.tcp.message.publish.ChannelMessageProcessor;
+import com.dnk.smart.tcp.state.StateController;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,9 +28,9 @@ import javax.annotation.Resource;
  * <p>
  * 1.app 指令请求保存至redisServer同时广播通知其它tcpServer
  * 2.gateway
- * 2-1.心跳:ClientMessageProcessor直接回复
- * 2-2.推送信息:发布至DbMessageProcessor
- * 2-3.版本请求:发布至DbMessageProcessor并订阅回复
+ * 2-1.心跳:直接回复
+ * 2-2.推送信息:发布至dBServer
+ * 2-3.版本请求:发布至dBServer并订阅回复
  * 2-4.指令响应:根据Command类型广播 ==> 并尝试继续执行任务
  */
 @Component
@@ -36,6 +38,8 @@ import javax.annotation.Resource;
 final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
     @Resource
     private CacheAccessor dataAccessor;
+    @Resource
+    private StateController stateController;
     @Resource
     private ClientMessageProcessor clientMessageProcessor;
     @Resource
@@ -52,7 +56,8 @@ final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
         }
         Channel channel = ctx.channel();
         String command = (String) msg;
-//        Log.logger(Factory.TCP_EVENT, command);
+
+        LoggerFactory.TCP_RECEIVE.logger("接收到登录后的终端请求:{}", command);
 
         JSONObject json = JSON.parseObject(command);
         Action action = Action.from(json.getString(Key.ACTION.getName()));
@@ -77,31 +82,33 @@ final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
             case GATEWAY:
                 //1.心跳
                 if (action == Action.HEART_BEAT) {
-//                    Log.logger(Factory.TCP_RECEIVE, "网关[" + sn + "] 发送心跳");
+                    LoggerFactory.TCP_RECEIVE.logger("网关[{}] 发送心跳", sn);
                     clientMessageProcessor.responseHeartbeat(channel);
                     return;
                 }
 
                 //2.推送
                 if (action != null && action.getType() == 3) {
-//                    Log.logger(Factory.TCP_RECEIVE, "网关[" + sn + "] 推送数据...");
-                    channelMessageProcessor.publishPushMessage(sn, command);//execute sn
+                    LoggerFactory.TCP_RECEIVE.logger("网关[{}] 推送数据:{}", sn, command);
+                    channelMessageProcessor.publishPushMessage(sn, command);
                     return;
                 }
 
                 //3.版本
                 if (action == Action.GET_VERSION) {
+                    LoggerFactory.TCP_RECEIVE.logger("网关[{}]请求版本信息", sn);
                     channelMessageProcessor.publishForGatewayVersion(sn);
                     return;
                 }
 
                 //4.响应请求
                 if (result != null) {
-//                    Log.logger(Factory.TCP_EVENT, "网关[" + sn + "] 接收到指令处理结果");
+                    LoggerFactory.TCP_RECEIVE.logger("接收到网关[{}]的指令处理结果", sn);
 
                     Command current = dataAccessor.command(channel);
                     if (current == null) {
-                        //won't happen TODO
+                        //normally it won't happen
+                        stateController.close(channel);
                         return;
                     }
                     if (StringUtils.hasText(current.getId())) {

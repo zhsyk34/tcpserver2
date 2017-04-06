@@ -15,8 +15,8 @@ public final class Verifier {
     private final String answer;
 
     public static Verifier generator() {
-        int group = RandomUtils.randomInteger(0, 49);
-        int offset = RandomUtils.randomInteger(0, 9);
+        int group = RandomUtils.randomInteger(49);
+        int offset = RandomUtils.randomInteger(9);
         return new Verifier(CodecKit.loginKey(group, offset), CodecKit.loginVerify(group, offset));
     }
 }

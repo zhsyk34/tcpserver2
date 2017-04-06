@@ -12,6 +12,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * 支持直接发送 {@link String} 或 {@link JSONObject}
  */
 final class TcpEncoder extends MessageToByteEncoder<Object> {
+
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
         String result = null;

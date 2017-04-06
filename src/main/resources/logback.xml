@@ -24,13 +24,31 @@
         <prudent>false</prudent>
     </appender>
 
-    <logger name="io.netty" level="debug"/>
+    <appender name="tcp" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${dir}${tcp}%d{yyyy-MM-dd-HH}.log</fileNamePattern>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{${simple}} %logger{80} - %msg%n</pattern>
+        </encoder>
+        <execute>true</execute>
+        <prudent>false</prudent>
+    </appender>
 
-    <logger name="udp.event" level="debug">
+    <logger name="io.netty" level="info"/>
+
+    <logger name="org.springframework" level="info"/>
+
+    <logger name="tcp" level="debug">
+        <appender-ref ref="tcp"/>
+    </logger>
+
+    <logger name="udp" level="debug">
         <appender-ref ref="udp"/>
     </logger>
 
-    <root level="info">
+    <root level="debug">
         <appender-ref ref="console"/>
     </root>
 </configuration>

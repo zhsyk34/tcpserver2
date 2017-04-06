@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Repository
-public class SimpleRedisAccessor implements RedisAccessor {
+public final class SimpleRedisAccessor implements RedisAccessor {
 
     @Resource
     private RedisTemplate<String, String> redisTemplate;

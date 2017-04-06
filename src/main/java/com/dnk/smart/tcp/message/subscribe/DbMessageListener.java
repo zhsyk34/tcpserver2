@@ -5,6 +5,7 @@ import com.dnk.smart.dict.Config;
 import com.dnk.smart.dict.redis.RedisChannel;
 import com.dnk.smart.dict.redis.channel.GatewayUdpPortAllocateData;
 import com.dnk.smart.dict.redis.channel.GatewayVersionResponseData;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.message.direct.ClientMessageProcessor;
 import com.dnk.smart.tcp.session.SessionRegistry;
 import com.dnk.smart.tcp.state.StateController;
@@ -37,9 +38,12 @@ public final class DbMessageListener extends AbstractRedisListener {
                 GatewayVersionResponseData versionData = JSON.parseObject(content, GATEWAY_VERSION_RESPONSE.getClazz());
 
                 Optional.ofNullable(sessionRegistry.getGatewayChannel(versionData.getSn())).ifPresent(channel -> clientMessageProcessor.responseVersionRequest(channel, versionData.getResult()));
+                LoggerFactory.REDIS_RECEIVE.logger("接收到[{}]版本请求回复:{}", versionData.getSn(), versionData.getResult());
                 break;
             case GATEWAY_UDP_PORT_ALLOCATE:
                 GatewayUdpPortAllocateData portData = JSON.parseObject(content, GATEWAY_UDP_PORT_ALLOCATE.getClazz());
+
+                LoggerFactory.REDIS_RECEIVE.logger("接收到[{}]端口请求回复:{}", portData.getSn(), portData.getAllocated());
 
                 Optional.ofNullable(sessionRegistry.getAcceptChannel(portData.getSn())).ifPresent(channel -> {
                     int allocated = portData.getAllocated();

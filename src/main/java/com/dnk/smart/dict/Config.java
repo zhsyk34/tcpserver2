@@ -1,6 +1,7 @@
 package com.dnk.smart.dict;
 
 /**
+ * TODO
  * 参数配置
  * 如无特殊说明时间单位均为秒
  */
@@ -23,7 +24,7 @@ public final class Config {
     //TCP登录超时时间
     public static final int TCP_LOGIN_TIMEOUT = 20;
     //app单次与服务器建立连接的最大时长
-    public static final int TCP_APP_TIMEOUT = 20;
+    public static final int TCP_APP_TIMEOUT = 8;
     //网关单次与服务器建立连接的最大时长
     public static final int TCP_GATEWAY_TIMEOUT = 30 * 60;
     //APP请求的最长处理时间(从开始处理时计时)
@@ -43,12 +44,10 @@ public final class Config {
     /**
      * -----------------------------日志配置-----------------------------
      */
-    public static final int LOGGER_CAPACITY = 1 << 12;
+    public static final int LOGGER_CAPACITY = 1 << 9;
     /**
      * -----------------------------系统时间配置-----------------------------
      */
-    //服务器启动完毕后执行扫描任务
-    public static final int SCHEDULE_TASK_DELAY_TIME = 1;
     //服务器启动状态监视时间间隔
     public static final int SERVER_START_MONITOR_TIME = 1500;//ms
     //通过UDP唤醒网关时检测状态时间间隔

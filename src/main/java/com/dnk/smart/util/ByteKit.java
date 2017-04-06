@@ -2,7 +2,7 @@ package com.dnk.smart.util;
 
 import io.netty.buffer.ByteBuf;
 
-public class ByteKit {
+public abstract class ByteKit {
 
     private static final int MARK = 0xff;
 

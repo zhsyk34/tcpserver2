@@ -11,6 +11,6 @@ public final class WebCommandResponseData {
     private String webServerId;
     @NonNull
     private String id;
-    //TODO:是否需要改进为enum以详细描述失败原因?
+    //TODO:改进为enum int
     private boolean result;
 }

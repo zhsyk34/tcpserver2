@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.dnk.smart.dict.Config;
 import com.dnk.smart.dict.redis.RedisChannel;
 import com.dnk.smart.dict.redis.channel.WebCommandRequestData;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.awake.AwakeService;
 import com.dnk.smart.tcp.command.CommandProcessor;
 import com.dnk.smart.tcp.session.SessionRegistry;
@@ -15,7 +16,7 @@ import javax.annotation.Resource;
 import static com.dnk.smart.dict.redis.RedisChannel.WEB_COMMAND_REQUEST;
 
 @Service
-public class WebMessageListener extends AbstractRedisListener {
+public final class WebMessageListener extends AbstractRedisListener {
 
     @Resource
     private SessionRegistry sessionRegistry;
@@ -36,6 +37,8 @@ public class WebMessageListener extends AbstractRedisListener {
                 //webServer会优先指定网关登录的服务器,否则将随机挑选存活的服务器负责唤醒
                 String serverId = data.getServerId();
 
+                LoggerFactory.REDIS_RECEIVE.logger("接收到web关于网关[{}]指令请求", data.getSn());
+
                 if (Config.TCP_SERVER_ID.equals(serverId)) {
                     String sn = data.getSn();
 
@@ -43,6 +46,7 @@ public class WebMessageListener extends AbstractRedisListener {
                     //实际上网关登录后会立即尝试执行任务
                     Channel channel = sessionRegistry.getGatewayChannel(sn);
                     if (channel != null) {
+                        LoggerFactory.TCP_EXECUTE.logger("网关[{}]开始执行任务", sn);
                         commandProcessor.startup(channel);
                     } else {
                         awakeService.append(sn);

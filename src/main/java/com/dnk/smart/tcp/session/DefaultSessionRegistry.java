@@ -5,6 +5,7 @@ import com.dnk.smart.dict.redis.cache.Command;
 import com.dnk.smart.dict.tcp.Device;
 import com.dnk.smart.dict.tcp.LoginInfo;
 import com.dnk.smart.dict.tcp.State;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.cache.CacheAccessor;
 import com.dnk.smart.tcp.command.CommandProcessor;
 import com.dnk.smart.tcp.message.publish.ChannelMessageProcessor;
@@ -23,7 +24,7 @@ import static com.dnk.smart.dict.Config.*;
 import static com.dnk.smart.dict.tcp.State.CLOSED;
 
 @Service
-public class DefaultSessionRegistry implements SessionRegistry {
+public final class DefaultSessionRegistry implements SessionRegistry {
 
     private static final Map<String, Channel> ACCEPTS = new ConcurrentHashMap<>(Config.TCP_ACCEPT_COUNT_PREDICT);
     private static final Map<String, Channel> APPS = new ConcurrentHashMap<>(Config.TCP_APP_COUNT_PREDICT);
@@ -51,6 +52,8 @@ public class DefaultSessionRegistry implements SessionRegistry {
 
     @Override
     public void registerOnActive(@NonNull Channel channel) {
+        LoggerFactory.TCP_EVENT.logger("有新的连接");
+
         Channel original = ACCEPTS.put(cacheAccessor.id(channel), channel);
         if (original != null) {
             original.close();
@@ -59,6 +62,8 @@ public class DefaultSessionRegistry implements SessionRegistry {
 
     @Override
     public void registerAgainBeforeLogin(@NonNull Channel channel) {
+        LoggerFactory.TCP_EVENT.logger("网关{}在登录前重新注册", cacheAccessor.info(channel).getSn());
+
         ACCEPTS.remove(cacheAccessor.id(channel));
         ACCEPTS.put(cacheAccessor.info(channel).getSn(), channel);
     }
@@ -78,6 +83,8 @@ public class DefaultSessionRegistry implements SessionRegistry {
                 }
 
                 original = APPS.put(id, channel);
+
+                LoggerFactory.TCP_EVENT.logger("app登录成功");
                 break;
             case GATEWAY:
                 String sn = info.getSn();
@@ -85,6 +92,8 @@ public class DefaultSessionRegistry implements SessionRegistry {
                 if (!ACCEPTS.remove(sn, channel)) {
                     return;
                 }
+
+                LoggerFactory.TCP_EVENT.logger("网关[{}]登录成功", sn);
 
                 original = GATEWAYS.put(sn, channel);
 
@@ -99,14 +108,17 @@ public class DefaultSessionRegistry implements SessionRegistry {
         }
 
         if (original != null) {
-//            String time = TimeUtils.format(TimeUtils.fromMillisecond(cacheAccessor.info(original).getHappen()));
-//            LoggerFactory.TCP_SESSION.logger("关闭超时连接[" + time + "]");
+            LoggerFactory.TCP_EVENT.logger("关闭超时连接[{}]", TimeUtils.format(TimeUtils.fromMillisecond(cacheAccessor.info(original).getHappen())));
             original.close();
         }
     }
 
     @Override
     public void unRegisterAfterClose(@NonNull Channel channel) {
+        if (channel.isActive() || channel.isOpen()) {
+            channel.close();//close confirm again for safe.
+        }
+
         State state = cacheAccessor.state(channel);
 
         String id = cacheAccessor.id(channel);
@@ -125,7 +137,7 @@ public class DefaultSessionRegistry implements SessionRegistry {
             case VERIFY:
                 //before allocate udp port,app and gateway has the same key to registry in the map
                 if (ACCEPTS.remove(id, channel)) {
-//                    Log.logger(Factory.TCP_EVENT, "连接[" + cacheAccessor.ip(channel) + "]超时未登录已被注销");
+                    LoggerFactory.TCP_EVENT.logger("连接[{}]超时未登录已被注销", cacheAccessor.ip(channel));
                     return;
                 }
                 break;
@@ -134,13 +146,13 @@ public class DefaultSessionRegistry implements SessionRegistry {
                 switch (device) {
                     case APP:
                         if (ACCEPTS.remove(id, channel)) {
-//                            Log.logger(Factory.TCP_EVENT, "app[" + cacheAccessor.ip(channel) + "]超时未登录已被注销");
+                            LoggerFactory.TCP_EVENT.logger("app[{}]超时未登录已被注销", cacheAccessor.ip(channel));
                             return;
                         }
                         break;
                     case GATEWAY:
                         if (ACCEPTS.remove(sn, channel)) {
-//                            Log.logger(Factory.TCP_EVENT, "网关[" + sn + "]超时未登录已被注销");
+                            LoggerFactory.TCP_EVENT.logger("网关[{}]超时未登录已被注销", sn);
                             return;
                         }
                         break;
@@ -152,7 +164,9 @@ public class DefaultSessionRegistry implements SessionRegistry {
                 switch (device) {
                     case APP:
                         if (!APPS.remove(id, channel)) {
-//                            Log.logger(Factory.TCP_ERROR, "app[" + cacheAccessor.ip(channel) + "]关闭出错(可能因为线时长已到被移除)");
+                            LoggerFactory.TCP_EVENT.logger("app[{}]关闭出错(可能因在线时长已到被移除)", cacheAccessor.ip(channel));
+                        } else {
+                            LoggerFactory.TCP_EVENT.logger("app[{}]注销连接", cacheAccessor.ip(channel));
                         }
                         break;
                     case GATEWAY:
@@ -162,9 +176,9 @@ public class DefaultSessionRegistry implements SessionRegistry {
                             cacheAccessor.state(channel, CLOSED);//close after success
 
                             commandProcessor.clean(channel);
-//                            Log.logger(Factory.TCP_EVENT, "gateway[" + sn + "]下线,清空任务队列...");
+                            LoggerFactory.TCP_EVENT.logger("网关[{}]下线,清空任务队列...", sn);
                         } else {
-//                            Log.logger(Factory.TCP_ERROR, channel.remoteAddress() + " gateway[" + sn + "]关闭出错(可能因在线时长已到被移除或重新登录时被关闭)");
+                            LoggerFactory.TCP_EVENT.logger(" 网关[{}]关闭出错(可能因在线时长已到被移除或重新登录时被关闭)", sn);
                         }
                         break;
                     default:
@@ -198,46 +212,40 @@ public class DefaultSessionRegistry implements SessionRegistry {
 
     @Override
     public List<LoopTask> monitor() {
+        LoopTask countTask = () -> {//TODO
+            System.out.print("accept:[" + ACCEPTS.size() + "]\t");
+            System.out.print("app:[" + APPS.size() + "]\t");
+            System.out.print("gateway:[" + GATEWAYS.size() + "]\t\n"
+            );
+        };
+
         LoopTask acceptTask = () -> ACCEPTS.forEach((key, channel) -> {
             if (TimeUtils.timeout(cacheAccessor.info(channel).getHappen(), TCP_LOGIN_TIMEOUT)) {
-                ACCEPTS.remove(key, channel);
                 channel.close();
-                this.unRegisterAfterClose(channel);
             }
         });
 
         LoopTask appTask = () -> APPS.forEach((id, channel) -> {
             if (TimeUtils.timeout(cacheAccessor.info(channel).getHappen(), TCP_APP_TIMEOUT)) {
-                APPS.remove(id, channel);
                 channel.close();
-                this.unRegisterAfterClose(channel);
             }
         });
 
         LoopTask gatewayTask = () -> GATEWAYS.forEach((sn, channel) -> {
             if (TimeUtils.timeout(cacheAccessor.info(channel).getHappen(), TCP_GATEWAY_TIMEOUT)) {
-                GATEWAYS.remove(sn, channel);
+                //call:channelInactive->close->onClose->unRegisterAfterClose
                 channel.close();
-
-                cacheAccessor.state(channel, CLOSED);//close after login
-
-                this.unRegisterAfterClose(channel);
             }
         });
 
         LoopTask commandTask = () -> GATEWAYS.forEach((sn, channel) -> {
             Command command = cacheAccessor.command(channel);
             if (command != null && TimeUtils.timeout(command.getHappen(), TCP_COMMAND_TIMEOUT)) {
-                GATEWAYS.remove(sn, channel);
                 channel.close();
-
-                cacheAccessor.state(channel, CLOSED);//close after login
-
-                this.unRegisterAfterClose(channel);
             }
         });
 
-        return Collections.unmodifiableList(Arrays.asList(acceptTask, appTask, gatewayTask, commandTask));
+        return Collections.unmodifiableList(Arrays.asList(acceptTask, appTask, gatewayTask, commandTask, countTask));
     }
 
 }

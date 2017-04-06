@@ -16,7 +16,7 @@ import static com.dnk.smart.dict.tcp.State.CLOSED;
 import static com.dnk.smart.dict.tcp.State.SUCCESS;
 
 @Service
-public class DefaultCommandProcessor implements CommandProcessor {
+public final class DefaultCommandProcessor implements CommandProcessor {
 
     @Resource
     private CacheAccessor cacheAccessor;

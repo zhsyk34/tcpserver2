@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import static com.dnk.smart.dict.redis.RedisKey.*;
 
 @Service
-public class DefaultCacheAccessor extends SimpleChannelCacheAccessor implements CacheAccessor {
+public final class DefaultCacheAccessor extends SimpleChannelCacheAccessor implements CacheAccessor {
 
     @Resource
     private RedisAccessor redisAccessor;

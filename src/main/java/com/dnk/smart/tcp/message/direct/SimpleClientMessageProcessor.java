@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-public class SimpleClientMessageProcessor implements ClientMessageProcessor {
+public final class SimpleClientMessageProcessor implements ClientMessageProcessor {
 
     @Resource
     private CacheAccessor cacheAccessor;

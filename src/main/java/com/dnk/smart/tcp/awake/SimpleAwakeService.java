@@ -1,7 +1,7 @@
 package com.dnk.smart.tcp.awake;
 
 import com.dnk.smart.dict.Config;
-import com.dnk.smart.tcp.cache.CacheAccessor;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.command.CommandProcessor;
 import com.dnk.smart.tcp.task.LoopTask;
 import com.dnk.smart.udp.session.UdpSessionController;
@@ -22,23 +22,22 @@ public final class SimpleAwakeService implements AwakeService {
     private static final Map<String, Record> TASKS = new ConcurrentHashMap<>();
 
     @Resource
-    private CacheAccessor cacheAccessor;
-    @Resource
     private UdpSessionController udpSessionController;
     @Resource
     private CommandProcessor commandProcessor;
 
     @Override
     public void append(@NonNull String sn) {
+        LoggerFactory.REDIS_RECEIVE.logger("尝试唤醒网关[{}]", sn);
         TASKS.put(sn, Record.instance());
     }
 
     @Override
     public void cancel(@NonNull String sn) {
+        LoggerFactory.REDIS_RECEIVE.logger("取消唤醒网关[{}]", sn);
         TASKS.remove(sn);
     }
 
-    //TODO
     @Override
     public LoopTask monitor() {
         return () -> {
@@ -49,9 +48,7 @@ public final class SimpleAwakeService implements AwakeService {
                 if (record.count > Config.GATEWAY_AWAKE_TIME) {
                     TASKS.remove(sn);
                     //this means the gateway can't awake this time,then clean all command request
-                    if (cacheAccessor.getTcpSession(sn) == null) {
-                        //TODO
-                    }
+                    LoggerFactory.UDP_EVENT.logger("唤醒网关[{}]失败,清空消息队列", sn);
                     commandProcessor.clean(sn);
                     continue;
                 }

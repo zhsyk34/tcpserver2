@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller;
 import javax.annotation.Resource;
 
 @Controller
-public class DefaultStateController extends AbstractStateController {
+public final class DefaultStateController extends AbstractStateController {
 
     /**
      * 初始连接注册

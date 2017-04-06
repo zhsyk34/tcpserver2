@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 import static com.dnk.smart.util.ByteKit.compare;
 import static com.dnk.smart.util.ByteKit.smallIntToByteArray;
 
-public class CodecKit {
+public abstract class CodecKit {
 
     private static final int MARK = 0xff;
 

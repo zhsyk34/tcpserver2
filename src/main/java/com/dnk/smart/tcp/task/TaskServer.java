@@ -4,14 +4,13 @@ import com.dnk.smart.dict.Config;
 import com.dnk.smart.tcp.awake.AwakeService;
 import com.dnk.smart.tcp.cache.CacheAccessor;
 import com.dnk.smart.tcp.session.SessionRegistry;
-import com.dnk.smart.util.ThreadUtils;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 public final class TaskServer {
@@ -22,35 +21,28 @@ public final class TaskServer {
     @Resource
     private CacheAccessor accessor;
 
+    @Resource
+    private TaskExecutor taskExecutor;
+
+    /**
+     * session timeout and command timeout
+     * awake gateway
+     */
     @SuppressWarnings("InfiniteLoopStatement")
+    @PostConstruct
     public void startup() {
-        List<LoopTask> loopTasks = loopTasks();
-        ExecutorService service = Executors.newFixedThreadPool(loopTasks.size());
-        loopTasks.forEach(task -> service.submit(() -> {
-            while (true) {
-                task.run();
-                ThreadUtils.await(1000 * 1);//TODO:TEST
-            }
-        }));
-        service.shutdown();
-
-    }
-
-    private List<LoopTask> loopTasks() {
-        List<LoopTask> list = new ArrayList<>();
-
-        //session timeout and command timeout
-        List<LoopTask> sessionTasks = sessionRegistry.monitor();
-
+        List<LoopTask> tasks = new ArrayList<>();
+        //session && command timeout
+        tasks.addAll(sessionRegistry.monitor());
         //awake gateway
-        LoopTask awakeTask = awakeService.monitor();
+        tasks.add(awakeService.monitor());
 
-        list.addAll(sessionTasks);
-        list.add(awakeTask);
-
-        return list;
+        tasks.forEach(task -> taskExecutor.execute(task::executor));
     }
 
+    /**
+     * 定时上报tcpServer状态
+     */
     public void report() {
         accessor.reportServerStatus(Config.TCP_SERVER_ID);
     }

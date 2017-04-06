@@ -50,8 +50,8 @@ public final class DefaultUdpSessionController implements UdpSessionController {
 
     @Override
     public UdpInfo info(@NonNull String sn) {
-        UdpInfo udpInfo = Optional.ofNullable(UDP_SESSIONS.get(sn)).orElse(UdpInfo.from(cacheAccessor.getUdpSession(sn)));
-        return Optional.of(udpInfo).filter(info -> !TimeUtils.timeout(info.getHappen(), Config.UDP_INFO_EXPIRE)).orElse(null);
+        UdpInfo udpInfo = Optional.ofNullable(UDP_SESSIONS.get(sn)).orElse(Optional.ofNullable(cacheAccessor.getUdpSession(sn)).map(UdpInfo::from).orElse(null));
+        return Optional.ofNullable(udpInfo).filter(info -> !TimeUtils.timeout(info.getHappen(), Config.UDP_INFO_EXPIRE)).orElse(null);
     }
 
     @Override

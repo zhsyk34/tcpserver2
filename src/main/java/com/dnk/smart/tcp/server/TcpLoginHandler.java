@@ -6,6 +6,7 @@ import com.dnk.smart.dict.Action;
 import com.dnk.smart.dict.Key;
 import com.dnk.smart.dict.Result;
 import com.dnk.smart.dict.tcp.LoginInfo;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.cache.CacheAccessor;
 import com.dnk.smart.tcp.state.StateController;
 import io.netty.channel.Channel;
@@ -19,7 +20,6 @@ import javax.annotation.Resource;
 import static com.dnk.smart.dict.tcp.State.SUCCESS;
 
 @Component
-//@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @ChannelHandler.Sharable
 final class TcpLoginHandler extends ChannelInboundHandlerAdapter {
     @Resource
@@ -33,10 +33,10 @@ final class TcpLoginHandler extends ChannelInboundHandlerAdapter {
             return;
         }
         String command = (String) msg;
-//        Log.logger(Factory.TCP_RECEIVE, command);
+
+        LoggerFactory.TCP_RECEIVE.logger("接收到{}", command);
 
         Channel channel = ctx.channel();
-
         JSONObject json = JSON.parseObject(command);
 
         //1.login request
@@ -62,5 +62,4 @@ final class TcpLoginHandler extends ChannelInboundHandlerAdapter {
             stateController.close(channel);
         }
     }
-
 }
