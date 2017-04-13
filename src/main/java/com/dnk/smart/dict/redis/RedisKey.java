@@ -15,7 +15,7 @@ public enum RedisKey {
     TCP_SERVER(TcpServer.class),
     TCP_SESSION(TcpSession.class),
     TCP_UDP_SESSION(UdpSession.class),
-    TCP_COMMAND(Command.class),
+//    TCP_COMMAND(Command.class),
 
     /*--------------------------以下在webServer/udpServer中处理--------------------------*/
     UDP_COMMAND(Command.class),

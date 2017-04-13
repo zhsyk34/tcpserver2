@@ -48,7 +48,7 @@ public final class SimpleAwakeService implements AwakeService {
                 if (record.count > Config.GATEWAY_AWAKE_TIME) {
                     TASKS.remove(sn);
                     //this means the gateway can't awake this time,then clean all command request
-                    LoggerFactory.UDP_EVENT.logger("唤醒网关[{}]失败,清空消息队列", sn);
+                    LoggerFactory.UDP_EVENT.logger("唤醒网关[{}]失败", sn);
                     commandProcessor.clean(sn);
                     continue;
                 }

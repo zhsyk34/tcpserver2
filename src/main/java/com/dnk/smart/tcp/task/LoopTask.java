@@ -11,7 +11,7 @@ public interface LoopTask {
     default Runnable executor() {
         while (true) {
             run();
-            ThreadUtils.await(10 * 1000);
+            ThreadUtils.await(2 * 1000);
         }
     }
 }

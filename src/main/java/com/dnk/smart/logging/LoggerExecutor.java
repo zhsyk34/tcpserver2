@@ -38,7 +38,6 @@ final class LoggerExecutor {
     }
 
     public static void monitor() {
-        System.err.println("logging task begin...");
         RECORDS.getAndSet(new LinkedBlockingQueue<>()).forEach(LoggerExecutor::invoke);
     }
 

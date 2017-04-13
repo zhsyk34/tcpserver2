@@ -1,6 +1,7 @@
 package com.dnk.smart.tcp.command;
 
 import com.dnk.smart.dict.redis.cache.Command;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.cache.CacheAccessor;
 import com.dnk.smart.tcp.message.publish.ChannelMessageProcessor;
 import io.netty.channel.Channel;
@@ -36,6 +37,7 @@ public final class DefaultCommandProcessor implements CommandProcessor {
 
     @Override
     public void execute(@NonNull Channel channel) {
+        LoggerFactory.TCP_EXECUTE.logger("开始处理请求指令");
         Optional.ofNullable(cacheAccessor.command(channel)).ifPresent(command -> {
             command.setHappen(System.currentTimeMillis());
             channel.writeAndFlush(command.getContent());
@@ -55,6 +57,7 @@ public final class DefaultCommandProcessor implements CommandProcessor {
 
     @Override
     public void restart(@NonNull Channel channel) {
+        LoggerFactory.TCP_EXECUTE.logger("继续处理请求指令");
         if (cacheAccessor.command(channel) != null) {
             this.reset(channel);
             this.startup(channel);
@@ -63,6 +66,7 @@ public final class DefaultCommandProcessor implements CommandProcessor {
 
     @Override
     public void clean(@NonNull String sn) {
+        LoggerFactory.TCP_EXECUTE.logger("清空{}指令消息队列", sn);
         Optional.ofNullable(cacheAccessor.getAllCommand(sn)).ifPresent(list -> list.forEach(channelMessageProcessor::publishCommandAborted));
     }
 

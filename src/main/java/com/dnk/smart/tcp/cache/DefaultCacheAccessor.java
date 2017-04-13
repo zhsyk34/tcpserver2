@@ -61,16 +61,16 @@ public final class DefaultCacheAccessor extends SimpleChannelCacheAccessor imple
 
     @Override
     public void shareAppCommand(@NonNull String appId, @NonNull Command command) {
-        redisAccessor.enqueue(TCP_COMMAND, JSON.toJSONString(command));
+        redisAccessor.enqueue(appId, JSON.toJSONString(command));
     }
 
     @Override
     public Command getFirstCommand(@NonNull String sn) {
-        return JSON.parseObject(redisAccessor.dequeue(TCP_COMMAND), Command.class);
+        return JSON.parseObject(redisAccessor.dequeue(sn), Command.class);
     }
 
     @Override
     public List<Command> getAllCommand(@NonNull String sn) {
-        return Optional.ofNullable(redisAccessor.dequeueAll(TCP_COMMAND)).map(Collection::stream).orElse(Stream.empty()).map(s -> JSON.parseObject(s, Command.class)).filter(Objects::nonNull).collect(Collectors.toList());
+        return Optional.ofNullable(redisAccessor.dequeueAll(sn)).map(Collection::stream).orElse(Stream.empty()).map(s -> JSON.parseObject(s, Command.class)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

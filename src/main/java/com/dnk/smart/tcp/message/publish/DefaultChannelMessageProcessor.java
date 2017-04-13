@@ -5,6 +5,7 @@ import com.dnk.smart.dict.Key;
 import com.dnk.smart.dict.Result;
 import com.dnk.smart.dict.redis.cache.Command;
 import com.dnk.smart.dict.redis.channel.*;
+import com.dnk.smart.logging.LoggerFactory;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -53,8 +54,10 @@ public final class DefaultChannelMessageProcessor extends SimpleRedisPublisher i
     public void publishCommandAborted(@NonNull Command command) {
         String terminalId = command.getTerminalId();
         if (StringUtils.hasText(command.getId())) {
+            LoggerFactory.TCP_EXECUTE.logger("web{}-{}请求失败", command.getTerminalId(), command.getId());
             this.publishWebCommandResult(terminalId, command.getId(), false);
         } else {
+            LoggerFactory.TCP_EXECUTE.logger("app{}请求失败", command.getTerminalId());
             JSONObject json = new JSONObject();
             json.put(Key.RESULT.getName(), Result.NO.getName());
             this.publishAppCommandResult(terminalId, json.toString());
