@@ -62,7 +62,7 @@ final class TcpDecoder extends ByteToMessageDecoder {
         int length = ByteKit.byteArrayToInt(new byte[]{in.readByte(), in.readByte()});
         int actual = length - Protocol.LENGTH_BYTES - Protocol.VERIFY_BYTES;
 
-        LoggerFactory.TCP_RECEIVE.logger("校验长度:[{}], 指令长度应为:[{}]", length, actual);
+//        LoggerFactory.TCP_RECEIVE.logger("校验长度:[{}], 指令长度应为:[{}]", length, actual);
         if (actual < Protocol.MIN_DATA_BYTES || actual > size - Protocol.REDUNDANT_BYTES) {
             in.clear();
             LoggerFactory.TCP_RECEIVE.logger("[长度校验数据]校验错误,丢弃本次数据");

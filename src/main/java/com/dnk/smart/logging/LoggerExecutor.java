@@ -22,6 +22,7 @@ final class LoggerExecutor {
 
     private static final AtomicReference<Queue<Record>> RECORDS = new AtomicReference<>(new LinkedBlockingQueue<>());
     /**
+     * TODO
      * not in any particular order!!!
      */
     private static final Field[] CONTENT_FIELDS = Content.class.getDeclaredFields();

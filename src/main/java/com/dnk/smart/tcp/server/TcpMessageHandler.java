@@ -60,7 +60,8 @@ final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
         LoggerFactory.TCP_RECEIVE.logger("接收到登录后的终端请求:{}", command);
 
         JSONObject json = JSON.parseObject(command);
-        Action action = Action.from(json.getString(Key.ACTION.getName()));
+        String actionValue = json.getString(Key.ACTION.getName());
+        Action action = Action.from(actionValue);
         Result result = Result.from(json.getString(Key.RESULT.getName()));
 
         LoginInfo info = dataAccessor.info(channel);
@@ -68,7 +69,7 @@ final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 
         switch (info.getDevice()) {
             case APP:
-                if (action != null) {
+                if (StringUtils.hasText(actionValue)) {
                     dataAccessor.shareAppCommand(dataAccessor.id(channel), Command.of(null, dataAccessor.id(channel), command, 0));
 
                     if (dataAccessor.getTcpSession(sn) == null) {
@@ -112,9 +113,9 @@ final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
                         return;
                     }
                     if (StringUtils.hasText(current.getId())) {
-                        channelMessageProcessor.publishAppCommandResult(current.getTerminalId(), command);
-                    } else {
                         channelMessageProcessor.publishWebCommandResult(current.getTerminalId(), current.getId(), result == Result.OK);
+                    } else {
+                        channelMessageProcessor.publishAppCommandResult(current.getTerminalId(), command);
                     }
 
                     commandProcessor.restart(channel);

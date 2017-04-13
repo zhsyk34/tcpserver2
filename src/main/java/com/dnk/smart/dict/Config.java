@@ -20,11 +20,11 @@ public final class Config {
     //TCP预计并发连接数:gateway
     public static final int TCP_GATEWAY_COUNT_PREDICT = 1 << 14;
     //TCP连接超时时间
-    public static final int TCP_CONNECT_TIMEOUT = 5;
+    public static final int TCP_CONNECT_TIMEOUT = 500;
     //TCP登录超时时间
     public static final int TCP_LOGIN_TIMEOUT = 20;
     //app单次与服务器建立连接的最大时长
-    public static final int TCP_APP_TIMEOUT = 8;
+    public static final int TCP_APP_TIMEOUT = 20 * 60;
     //网关单次与服务器建立连接的最大时长
     public static final int TCP_GATEWAY_TIMEOUT = 30 * 60;
     //APP请求的最长处理时间(从开始处理时计时)

@@ -1,6 +1,7 @@
 package com.dnk.smart.tcp.task;
 
 import com.dnk.smart.dict.Config;
+import com.dnk.smart.logging.LoggerFactory;
 import com.dnk.smart.tcp.awake.AwakeService;
 import com.dnk.smart.tcp.cache.CacheAccessor;
 import com.dnk.smart.tcp.session.SessionRegistry;
@@ -28,7 +29,6 @@ public final class TaskServer {
      * session timeout and command timeout
      * awake gateway
      */
-    @SuppressWarnings("InfiniteLoopStatement")
     @PostConstruct
     public void startup() {
         List<LoopTask> tasks = new ArrayList<>();
@@ -44,6 +44,7 @@ public final class TaskServer {
      * 定时上报tcpServer状态
      */
     public void report() {
+        LoggerFactory.TCP_EXECUTE.logger("report server info");
         accessor.reportServerStatus(Config.TCP_SERVER_ID);
     }
 

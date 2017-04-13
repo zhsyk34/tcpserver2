@@ -7,10 +7,11 @@ public interface LoopTask {
 
     void run();
 
+    @SuppressWarnings("InfiniteLoopStatement")
     default Runnable executor() {
         while (true) {
             run();
-            ThreadUtils.await(2000);
+            ThreadUtils.await(10 * 1000);
         }
     }
 }

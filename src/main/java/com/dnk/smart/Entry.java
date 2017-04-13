@@ -37,9 +37,9 @@ public class Entry {
         service.shutdown();
 
         //3:task
+        //run in spring-config
 //        TaskServer taskServer = context.getBean(TaskServer.class);
 //        taskServer.startup();
-
     }
 
 }

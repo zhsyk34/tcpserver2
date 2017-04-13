@@ -10,6 +10,7 @@ import java.util.Map;
 /**
  * 指令可能的action值
  * 只枚举tcpServer需要处理的情况
+ * 其它值默认为控制指令直接转发
  */
 @Getter
 @RequiredArgsConstructor

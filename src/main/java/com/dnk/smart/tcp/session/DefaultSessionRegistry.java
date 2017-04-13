@@ -212,12 +212,7 @@ public final class DefaultSessionRegistry implements SessionRegistry {
 
     @Override
     public List<LoopTask> monitor() {
-        LoopTask countTask = () -> {//TODO
-            System.out.print("accept:[" + ACCEPTS.size() + "]\t");
-            System.out.print("app:[" + APPS.size() + "]\t");
-            System.out.print("gateway:[" + GATEWAYS.size() + "]\t\n"
-            );
-        };
+        LoopTask countTask = () -> LoggerFactory.TCP_EVENT.logger("accept:[{}]\tapp:[{}]\t,gateway:[{}]", ACCEPTS.size(), APPS.size(), GATEWAYS.size());
 
         LoopTask acceptTask = () -> ACCEPTS.forEach((key, channel) -> {
             if (TimeUtils.timeout(cacheAccessor.info(channel).getHappen(), TCP_LOGIN_TIMEOUT)) {
@@ -245,7 +240,7 @@ public final class DefaultSessionRegistry implements SessionRegistry {
             }
         });
 
-        return Collections.unmodifiableList(Arrays.asList(acceptTask, appTask, gatewayTask, commandTask, countTask));
+        return Collections.unmodifiableList(Arrays.asList(countTask, acceptTask, appTask, gatewayTask, commandTask));
     }
 
 }

@@ -1,7 +1,6 @@
 package com.dnk.smart.tcp.cache;
 
 import com.dnk.smart.dict.redis.RedisKey;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -59,8 +58,7 @@ public final class SimpleRedisAccessor implements RedisAccessor {
     @Override
     public String get(String key, String hashKey) {
         //TODO:
-        HashOperations<String, String, String> hash = redisTemplate.opsForHash();
-        return hash.get(key, hashKey);
+        return (String) redisTemplate.opsForHash().get(key, hashKey);
     }
 
     @Override

@@ -46,7 +46,7 @@ public final class DefaultChannelMessageProcessor extends SimpleRedisPublisher i
 
     @Override
     public void publishAppCommandResult(@NonNull String appId, @NonNull String result) {
-        super.publish(WEB_COMMAND_RESPONSE, AppCommandResponseData.of(appId, result));
+        super.publish(APP_COMMAND_RESPONSE, AppCommandResponseData.of(appId, result));
     }
 
     @Override
