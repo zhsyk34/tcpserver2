@@ -59,12 +59,12 @@ public interface RedisCacheAccessor {
     void reportServerStatus();
 
     /**
-     * 提交(共享)app的请求指令
+     * 提交请求指令
      *
-     * @param appId   app连接的channelId
-     * @param command app的请求指令
+     * @param sn      网关序列号
+     * @param command 请求指令
      */
-    void shareAppCommand(@NonNull String appId, @NonNull Command command);
+    void submitCommand(@NonNull String sn, @NonNull Command command);
 
     /**
      * 获取并移除待处理的第一条请求指令

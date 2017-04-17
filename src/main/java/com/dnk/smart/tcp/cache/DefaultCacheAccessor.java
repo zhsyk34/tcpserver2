@@ -60,8 +60,8 @@ public final class DefaultCacheAccessor extends SimpleChannelCacheAccessor imple
     }
 
     @Override
-    public void shareAppCommand(@NonNull String appId, @NonNull Command command) {
-        redisAccessor.enqueue(appId, JSON.toJSONString(command));
+    public void submitCommand(@NonNull String sn, @NonNull Command command) {
+        redisAccessor.enqueue(sn, JSON.toJSONString(command));
     }
 
     @Override

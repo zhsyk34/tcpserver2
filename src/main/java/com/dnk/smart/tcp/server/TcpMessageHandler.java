@@ -70,7 +70,7 @@ final class TcpMessageHandler extends ChannelInboundHandlerAdapter {
         switch (info.getDevice()) {
             case APP:
                 if (StringUtils.hasText(actionValue)) {
-                    dataAccessor.shareAppCommand(dataAccessor.id(channel), Command.of(null, dataAccessor.id(channel), command, 0));
+                    dataAccessor.submitCommand(sn, Command.of(null, dataAccessor.id(channel), command, 0));
 
                     if (dataAccessor.getTcpSession(sn) == null) {
                         awakeService.append(sn);//直接唤醒
